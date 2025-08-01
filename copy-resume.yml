@@ -1,0 +1,17 @@
+---
+- name: Copy resume to EC2 instance
+  hosts: all
+  become: true
+  vars:
+    src_path: /mnt/c/Users/opate/OneDrive/Documents/Teju-opawande-resume.docx
+    dest_path: /home/ec2-user/Teju-opawande-resume.docx
+
+  tasks:
+    - name: Copy resume to remote EC2
+      ansible.builtin.copy:
+        src: "{{ src_path }}"
+        dest: "{{ dest_path }}"
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+

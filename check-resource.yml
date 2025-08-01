@@ -1,0 +1,20 @@
+- name: Check memory and CPU usage on servers
+  hosts: ec2
+  gather_facts: no
+  tasks:
+    - name: Check memory usage (free -m)
+      command: free -m
+      register: memory_info
+
+    - name: Display memory info
+      debug:
+        var: memory_info.stdout_lines
+
+    - name: Check CPU load averages (uptime)
+      command: uptime
+      register: cpu_info
+
+    - name: Display CPU load averages
+      debug:
+        var: cpu_info.stdout
+

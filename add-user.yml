@@ -1,0 +1,39 @@
+- name: Create deployer user and set up SSH
+  hosts: ec2
+  become: yes
+  vars:
+    new_user: deployer
+    ssh_pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDG0seTuWeOPn2U/dg0RULJOClzXXKLcf0YLMkuLF8pZkmHf1/6C4TJygDqjnfVSkyTmGv1cgfMejpk7O+YJ0ygntYfy5XwwcQ9PbOREBsNAUNFsFzbNJH6csKblASuOnWRTzWXgLIFwPeSdmrNSjz1y80Bdj7OxvtLxaSQeeAwYvRd1Ws4KrGoH5YBJ35f22q/WiUe90gbt7Jg7S6E3YDvIB8P4dJ4/oBPMEafh6I3kP1ajHHTQGJO0PPcj9nsIh75nQ+CXKuCulyB8LaFGCDALCgp2sVEoN5SyEK0TWWXFu/Ztx0z2YpSdc408EhkdkszV1ezgatZNba4vkV01W1ixpPd6oF5ozOLWxLsw8Dpc0t1Wr/tBZnkK0Axpdb8wzaB5/AgItOMEceNHRr5VzKHSoSt2xZS6pzExGaAciNDXcqsD0HXxTfY1MrfuHYktKiMNxeRCKSHRCWtsIDGMli1A4hKT1JPVo0n0bD4zzuBCNB54w0MyK1kY9idddRLZhGmGbqbfYDLxZgFA6nvisBnsdI+cEeqsAwXwScIsgfE+WV2Ey47/KxxY43jb0ULyoQa0lhxe87ithI+k07xAAL8anUUJEc2hfdDjPXTa44AOHV2jiNI0ZB+qj3WgSySDCKQPbmkr0RwsfpP46pbfQ3H3wbNaoe9rjURRVS7V513yw== tejumola2012@gmail.com"
+  tasks:
+    - name: Create a new user
+      user:
+        name: "{{ new_user }}"
+        shell: /bin/bash
+        groups: wheel
+        append: yes
+        create_home: yes
+
+    - name: Create .ssh directory
+      file:
+        path: "/home/{{ new_user }}/.ssh"
+        state: directory
+        mode: '0700'
+        owner: "{{ new_user }}"
+        group: "{{ new_user }}"
+
+    - name: Add public key to authorized_keys
+      copy:
+        content: "{{ ssh_pub_key }}"
+        dest: "/home/{{ new_user }}/.ssh/authorized_keys"
+        owner: "{{ new_user }}"
+        group: "{{ new_user }}"
+        mode: '0600'
+
+    - name: Allow passwordless sudo
+      lineinfile:
+        path: /etc/sudoers.d/{{ new_user }}
+        create: yes
+        state: present
+        line: "{{ new_user }} ALL=(ALL) NOPASSWD:ALL"
+        mode: '0440'
+
